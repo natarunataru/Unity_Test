@@ -4,33 +4,29 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float SPEED = 5f;        // 移動速度
-    public float SPEED_LOW = 2.5f;  // Shiftキー入力時の移動速度
+    [Header("移動速度")] public float speed;          // 移動速度
+    [Header("低速率（％）")] public float slowRate;    // Shiftキー入力時の速度変化
 
     private Vector3 moveDirection = Vector3.zero;
     private bool isShiftPressed = false;
 
-    void Update()
+    private void Update()
     {
-        // キー入力を検出して移動方向を設定する
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        // 移動方向のセット
+        SetMoveDirection();
 
-        if (horizontalInput < 0)
+        // プレイヤーを移動させる
+        MovePlayer();
+    }
+
+    private void SetMoveDirection()
+    {
+        float horizontalInput = Input.GetAxisRaw("Horizontal");
+        float verticalInput = Input.GetAxisRaw("Vertical");
+
+        if (horizontalInput != 0 || verticalInput != 0)
         {
-            moveDirection = Vector3.left;
-        }
-        else if (horizontalInput > 0)
-        {
-            moveDirection = Vector3.right;
-        }
-        else if (verticalInput < 0)
-        {
-            moveDirection = Vector3.down;
-        }
-        else if (verticalInput > 0)
-        {
-            moveDirection = Vector3.up;
+            moveDirection = new Vector3(horizontalInput, verticalInput, 0f).normalized;
         }
         else
         {
@@ -38,23 +34,20 @@ public class PlayerController : MonoBehaviour
         }
 
         // Shiftキーの状態を更新する
-        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
             isShiftPressed = true;
         }
-        else if (Input.GetKeyUp(KeyCode.LeftShift) || Input.GetKeyUp(KeyCode.RightShift))
+        else
         {
             isShiftPressed = false;
         }
-
-        // プレイヤーを移動させる
-        MovePlayer();
     }
 
-    void MovePlayer()
+    private void MovePlayer()
     {
         // 現在の移動速度を設定
-        float currentSpeed = isShiftPressed ? SPEED_LOW : SPEED;
+        float currentSpeed = isShiftPressed ? speed * slowRate / 100 : speed;
 
         // プレイヤーの位置を更新する
         Vector3 newPosition = transform.position + (moveDirection * currentSpeed * Time.deltaTime);
@@ -69,4 +62,3 @@ public class PlayerController : MonoBehaviour
         transform.position = newPosition;
     }
 }
-

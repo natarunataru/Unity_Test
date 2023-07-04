@@ -1,0 +1,122 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerController : MonoBehaviour
+{
+    [Header("移動速度")]public float speed;        // 移動速度
+    [Header("低速率（％）")] public float slowRate;  // Shiftキー入力時の速度変化
+
+    private Vector3 moveDirection = Vector3.zero;
+    private bool isShiftPressed = false;
+
+    //移動入力を管理するリスト
+    List<string> horizontalKeyInputList = new List<string>();
+    List<string> verticalKeyInputList = new List<string>();
+
+    private void Start()
+    {
+        horizontalKeyInputList.Add("None");
+        verticalKeyInputList.Add("None");
+    }
+
+    void Update()
+    {
+        //移動キーの保持
+        ControllerKeyInput();
+
+        //移動方向のセット
+        SetMoveDirection();
+
+        // プレイヤーを移動させる
+        MovePlayer();
+    }
+
+    public void ControllerKeyInput()
+    {
+        //移動入力キーの保存
+
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            horizontalKeyInputList.Add("Right");
+        }
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            horizontalKeyInputList.Add("Left");
+        }
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            verticalKeyInputList.Add("Up");
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            verticalKeyInputList.Add("Down");
+        }
+
+        //移動入力キーの破棄
+        if (Input.GetKeyUp(KeyCode.RightArrow))
+        {
+            horizontalKeyInputList.Remove("Right");
+        }
+        if (Input.GetKeyUp(KeyCode.LeftArrow))
+        {
+            horizontalKeyInputList.Remove("Left");
+        }
+        if (Input.GetKeyUp(KeyCode.UpArrow))
+        {
+            verticalKeyInputList.Remove("Up");
+        }
+        if (Input.GetKeyUp(KeyCode.DownArrow))
+        {
+            verticalKeyInputList.Remove("Down");
+        }
+    }
+
+    public void SetMoveDirection()
+    {
+        string xLastKey = horizontalKeyInputList[horizontalKeyInputList.Count - 1];
+        string yLastKey = verticalKeyInputList[verticalKeyInputList.Count - 1];
+
+        //Debug.Log("x = " + xLastKey);
+        //入力されている方向へ移動
+        if (yLastKey == "Up")
+        {
+            moveDirection = Vector3.up;
+
+        }
+        if (yLastKey == "Down")
+        {
+            moveDirection = Vector3.down;
+
+        }
+        if (xLastKey == "Right")
+        {
+            moveDirection = Vector3.right;
+
+        }
+        if (xLastKey == "Left")
+        {
+            moveDirection = Vector3.left;
+        }
+
+    }
+
+    void MovePlayer()
+    {
+        // 現在の移動速度を設定
+        float currentSpeed = isShiftPressed ? speed * slowRate / 100 : speed;
+
+        // プレイヤーの位置を更新する
+        Vector3 newPosition = transform.position + (moveDirection * currentSpeed * Time.deltaTime);
+
+        // 移動制限：画面外に出ないようにする
+        float screenLimitX = Camera.main.orthographicSize * Camera.main.aspect;
+        float screenLimitY = Camera.main.orthographicSize;
+
+        newPosition.x = Mathf.Clamp(newPosition.x, -screenLimitX, screenLimitX);
+        newPosition.y = Mathf.Clamp(newPosition.y, -screenLimitY, screenLimitY);
+
+        transform.position = newPosition;
+    }
+}
+

@@ -1,0 +1,112 @@
+東方シリーズのような２DシューティングゲームをUnity作成します。
+今回は、ステージ内に登場するザコ敵の出現、退場を制御する仕組みを実装します。
+以下の仕様を考慮して、Ｃ＃のスクリプトを作成してください。
+
+敵の出現方法
+・ステージ開始からの経過時間で敵を出現させる。
+・敵キャラクターの構成は、敵のイラスト、あたり判定、基礎パラメータ、敵固有設定といった各敵のコンポーメントを含むオブジェクト（敵設定オブジェクトと呼称）と、移動経路オブジェクトの二つを組み合わせることで構成される。
+・敵の出現する時間はExcelで作成したCSVファイルで管理する。
+
+CSVファイルで管理するもの
+・出現時刻：敵が登場する時間
+・出現座標X：敵キャラクターが出現するワールドX座標
+・出現座標Y：敵キャラクターが出現するワールドY座標
+・出現座標Z：敵キャラクターが出現するワールドZ座標
+・敵設定オブジェクトの指定
+・敵設定オブジェクトと合わせる移動経路オブジェクトの指定
+・移動速度
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.IO;
+
+public class EnemyManager : MonoBehaviour
+{
+    public GameObject enemyPrefab; // 敵キャラクターのプレハブ
+    public GameObject pathPrefab; // 移動経路オブジェクトのプレハブ
+    public string csvFilePath; // CSVファイルのパス
+
+    private List<EnemyData> enemyDataList; // CSVから読み込んだ敵データのリスト
+
+    private void Start()
+    {
+        LoadEnemyDataFromCSV();
+        StartCoroutine(SpawnEnemies());
+    }
+
+    private void LoadEnemyDataFromCSV()
+    {
+        enemyDataList = new List<EnemyData>();
+
+        StreamReader reader = new StreamReader(csvFilePath);
+        while (!reader.EndOfStream)
+        {
+            string line = reader.ReadLine();
+            string[] data = line.Split(',');
+
+            float spawnTime = float.Parse(data[0]);
+            float spawnPosX = float.Parse(data[1]);
+            float spawnPosY = float.Parse(data[2]);
+            float spawnPosZ = float.Parse(data[3]);
+            float moveSpeed = float.Parse(data[4]);
+            string enemySettings = data[5];
+            string pathSettings = data[6];
+
+            EnemyData enemyData = new EnemyData(spawnTime, spawnPosX, spawnPosY, spawnPosZ, enemySettings, pathSettings, moveSpeed);
+            enemyDataList.Add(enemyData);
+        }
+
+        reader.Close();
+    }
+
+    private IEnumerator SpawnEnemies()
+    {
+        foreach (EnemyData enemyData in enemyDataList)
+        {
+            yield return new WaitForSeconds(enemyData.spawnTime);
+
+            GameObject enemy = Instantiate(enemyPrefab, new Vector3(enemyData.spawnPosX, enemyData.spawnPosY, enemyData.spawnPosZ), Quaternion.identity);
+            EnemyController enemyController = enemy.GetComponent<EnemyController>();
+            enemyController.SetSettings(enemyData.enemySettings, enemyData.pathSettings);
+            enemyController.SetMoveSpeed(enemyData.moveSpeed);
+        }
+    }
+}
+
+public class EnemyData
+{
+    public float spawnTime;
+    public float spawnPosX;
+    public float spawnPosY;
+    public float spawnPosZ;
+    public float moveSpeed;
+    public string enemySettings;
+    public string pathSettings;
+
+    public EnemyData(float spawnTime, float spawnPosX, float spawnPosY, float spawnPosZ, float moveSpeed, string enemySettings, string pathSettings)
+    {
+        this.spawnTime = spawnTime;
+        this.spawnPosX = spawnPosX;
+        this.spawnPosY = spawnPosY;
+        this.spawnPosZ = spawnPosZ;
+        this.moveSpeed = moveSpeed;
+        this.enemySettings = enemySettings;
+        this.pathSettings = pathSettings;
+    }
+}
+
+public class EnemyController : MonoBehaviour
+{
+    // 敵のコンポーネントや移動経路などの設定を行うメソッド
+    public void SetSettings(string enemySettings, string pathSettings)
+    {
+        // 敵の設定オブジェクトの指定と初期化処理
+        // 例えば、敵のイラストや当たり判定の設定などを行う
+
+        // 移動経路オブジェクトの指定と初期化処理
+        // 例えば、敵の移動
+
+
+
+

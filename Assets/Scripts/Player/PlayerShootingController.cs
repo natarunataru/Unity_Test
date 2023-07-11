@@ -60,6 +60,7 @@ public class PlayerShootingController : MonoBehaviour
         Instantiate(bulletPrefab, transform.position, transform.rotation);
     }
 
+    //Shiftキー入力時の攻撃
     private void ShootOnShift()
     {
         Quaternion leftRotation = Quaternion.Euler(0f, 0f, -90f);
